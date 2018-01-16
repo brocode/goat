@@ -1,0 +1,35 @@
+{
+	"ImportPath": "github.com/brocode/goat",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gizak/termui",
+			"Comment": "v2.2.0-30-ge9a3a6b",
+			"Rev": "e9a3a6b3d6472ce875254d734f36335c15ebd4e6"
+		},
+		{
+			"ImportPath": "github.com/jessevdk/go-flags",
+			"Comment": "v1.3.0-5-gf88afde",
+			"Rev": "f88afde2fa19a30cf50ba4b05b3d13bc6bae3079"
+		},
+		{
+			"ImportPath": "github.com/maruel/panicparse/stack",
+			"Comment": "v1.0.2-12-gc0182c1",
+			"Rev": "c0182c169410cfa80c7e8f046dad208eaef91338"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-runewidth",
+			"Comment": "v0.0.2-3-g97311d9",
+			"Rev": "97311d9f7767e3d6f422ea06661bc2c7a19e8a5d"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/go-wordwrap",
+			"Rev": "ad45545899c7b13c020ea92b2072220eefad42b8"
+		},
+		{
+			"ImportPath": "github.com/nsf/termbox-go",
+			"Rev": "8c5e0793e04afcda7fe23d0751791e7321df4265"
+		}
+	]
+}
