@@ -1,0 +1,5 @@
+# goat
+
+aka better ~sleep~ 
+
+Waits for a specified time. The user can interrupt this. The caller is able to specify a list of keybindings and the returncode they should cause. 
