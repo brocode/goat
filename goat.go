@@ -10,7 +10,8 @@ import (
 )
 
 type opts struct {
-	Time int `short:"t" long:"time" description:"timer in seconds" required:"true"`
+	Time  int    `short:"t" long:"time" description:"timer in seconds" required:"true"`
+	Title string `long:"title" description:"title"`
 }
 
 func main() {
@@ -38,12 +39,19 @@ func timerGauge() *ui.Gauge {
 	return timerGauge
 }
 
-func headerBox() *ui.Par {
-	p := ui.NewPar("'q' TO ABORT\n'c' TO CHECK NOW")
+func headerBox(title string) *ui.Par {
+	keyText := "PRESS\n'q' TO ABORT\n'c' TO CHECK NOW"
+	var boxTitle string
+	if title != "" {
+		boxTitle = title
+	} else {
+		boxTitle = "goat"
+	}
+	p := ui.NewPar(keyText)
 	p.Height = 5
 	p.Width = 50
 	p.TextFgColor = ui.ColorBlack
-	p.BorderLabel = "goat"
+	p.BorderLabel = boxTitle
 	p.BorderFg = ui.ColorCyan
 	return p
 }
@@ -56,7 +64,7 @@ func runUI(opts opts) int {
 
 	start := time.Now()
 
-	p := headerBox()
+	p := headerBox(opts.Title)
 
 	timerGauge := timerGauge()
 
