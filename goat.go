@@ -9,33 +9,22 @@ import (
 	"time"
 )
 
+type opts struct {
+	Time int `short:"t" long:"time" description:"timer in seconds" required:"true"`
+}
+
 func main() {
+	var opts = opts{}
 
-	var opts struct {
-		Time int `short:"t" long:"time" description:"timer in seconds" required:"true"`
-	}
-
-	returnCode := 0
-
-	_, err := flags.Parse(&opts)
-	if err != nil {
+	if _, err := flags.Parse(&opts); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	if err := ui.Init(); err != nil {
-		panic(err)
-	}
+	os.Exit(runUI(opts))
+}
 
-	start := time.Now()
-
-	p := ui.NewPar("'q' TO ABORT\n'c' TO CHECK NOW")
-	p.Height = 5
-	p.Width = 50
-	p.TextFgColor = ui.ColorBlack
-	p.BorderLabel = "goat"
-	p.BorderFg = ui.ColorCyan
-
+func timerGauge() *ui.Gauge {
 	timerGauge := ui.NewGauge()
 	timerGauge.Percent = 0
 	timerGauge.Width = 50
@@ -46,6 +35,30 @@ func main() {
 	timerGauge.BarColor = ui.ColorGreen
 	timerGauge.BorderFg = ui.ColorWhite
 	timerGauge.BorderLabelFg = ui.ColorMagenta
+	return timerGauge
+}
+
+func headerBox() *ui.Par {
+	p := ui.NewPar("'q' TO ABORT\n'c' TO CHECK NOW")
+	p.Height = 5
+	p.Width = 50
+	p.TextFgColor = ui.ColorBlack
+	p.BorderLabel = "goat"
+	p.BorderFg = ui.ColorCyan
+	return p
+}
+
+func runUI(opts opts) int {
+	returnCode := 0
+	if err := ui.Init(); err != nil {
+		panic(err)
+	}
+
+	start := time.Now()
+
+	p := headerBox()
+
+	timerGauge := timerGauge()
 
 	ui.Body.AddRows(
 		ui.NewRow(
@@ -87,5 +100,5 @@ func main() {
 
 	ui.Loop()
 	ui.Close()
-	os.Exit(returnCode)
+	return returnCode
 }
