@@ -1,6 +1,6 @@
 * goat
   
-  [[https://travis-ci.org/brocode/goat][file:https://travis-ci.org/goat/fw.svg?branch=master]]
+  [[https://travis-ci.org/brocode/goat][file:https://travis-ci.org/brocode/goat.svg?branch=master]]
 
   aka better ~sleep~ 
 
