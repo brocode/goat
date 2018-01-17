@@ -1,5 +1,7 @@
 * goat
+  
+  [[https://travis-ci.org/brocode/goat][file:https://travis-ci.org/goat/fw.svg?branch=master]]
 
-aka better ~sleep~ 
+  aka better ~sleep~ 
 
-Waits for a specified time. The user can interrupt this. The caller is able to specify a list of keybindings and the returncode they should cause. 
+  Waits for a specified time. The user can interrupt this. The caller is able to specify a list of keybindings and the returncode they should cause. 
