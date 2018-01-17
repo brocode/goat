@@ -7,11 +7,37 @@ import (
 	"math"
 	"os"
 	"time"
+	"strings"
+	"strconv"
 )
 
 type opts struct {
 	Time  int    `short:"t" long:"time" description:"timer in seconds" required:"true"`
 	Title string `long:"title" description:"title"`
+	Mappings []string `short:"m" long:"mapping" description:"Keybinding mapping. Format: <retcode>:<key>:<label> (64 <= retcode <= 113)"`
+}
+
+type mapping struct {
+	exitCode int
+	label string
+	key string
+}
+
+func parseMappings(rawMappings []string) ([]mapping, error) {
+	var mappings []mapping
+	for _, rawMapping := range rawMappings {
+		var slicedMapping =	strings.Split(rawMapping, ":")
+		if(len(slicedMapping) != 3){
+			return nil, fmt.Errorf("Invalid mapping '%s', format should be <retcode>:<key>:<label>", rawMapping)
+		}
+		var exitCode, err = strconv.Atoi(slicedMapping[0])
+		if err != nil || exitCode < 64 || exitCode > 113 {
+			return nil, fmt.Errorf("Invalid mapping '%s', retcode '%s' is either not a number or < 64 or > 113", rawMapping, slicedMapping[0])
+		}
+
+		mappings = append(mappings, mapping {exitCode: exitCode, key: slicedMapping[1], label: slicedMapping[2] })
+	}
+	return mappings, nil
 }
 
 func main() {
@@ -22,7 +48,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	os.Exit(runUI(opts))
+	mappings, err := parseMappings(opts.Mappings)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+
+	os.Exit(runUI(opts, mappings))
 }
 
 func timerGauge() *ui.Gauge {
@@ -39,8 +72,15 @@ func timerGauge() *ui.Gauge {
 	return timerGauge
 }
 
-func headerBox(title string) *ui.Par {
-	keyText := "PRESS\n'q' TO ABORT\n'c' TO CHECK NOW"
+func headerBox(title string, mappings []mapping) *ui.Par {
+	var shortcuts []string
+	shortcuts = append(shortcuts, "'q' -> abort")
+	shortcuts = append(shortcuts,	"'c' -> continue")
+	for _, mapping := range mappings {
+		shortcuts = append(shortcuts, fmt.Sprintf("'%s' -> %s", mapping.key, mapping.label))
+	}
+
+	keyText := fmt.Sprintf("KEYBINDINGS:\n%s", strings.Join(shortcuts, "\n"))
 	var boxTitle string
 	if title != "" {
 		boxTitle = title
@@ -48,7 +88,7 @@ func headerBox(title string) *ui.Par {
 		boxTitle = "goat"
 	}
 	p := ui.NewPar(keyText)
-	p.Height = 5
+	p.Height = 5 + len(mappings)
 	p.Width = 50
 	p.TextFgColor = ui.ColorBlack
 	p.BorderLabel = boxTitle
@@ -56,7 +96,7 @@ func headerBox(title string) *ui.Par {
 	return p
 }
 
-func runUI(opts opts) int {
+func runUI(opts opts, mappings []mapping) int {
 	returnCode := 0
 	if err := ui.Init(); err != nil {
 		panic(err)
@@ -64,7 +104,7 @@ func runUI(opts opts) int {
 
 	start := time.Now()
 
-	p := headerBox(opts.Title)
+	p := headerBox(opts.Title, mappings)
 
 	timerGauge := timerGauge()
 
@@ -87,6 +127,14 @@ func runUI(opts opts) int {
 	ui.Handle("/sys/kbd/c", func(ui.Event) {
 		ui.StopLoop()
 	})
+
+	for _, mapping := range mappings {
+		exitCode := mapping.exitCode
+		ui.Handle(fmt.Sprintf("/sys/kbd/%s", mapping.key), func(ui.Event) {
+			returnCode = exitCode
+			ui.StopLoop()
+		})
+	}
 
 	// this does not work for some reason
 	// ui.Handle("/sys/wnd/resize", func(e ui.Event) {
