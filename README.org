@@ -6,4 +6,4 @@
 
   Waits for a specified time. The user can interrupt this. The caller is able to specify a list of keybindings and the returncode they should cause. 
 
-  The idea is that the user can interrupt goat if he knows the condition it is waiting for is already fulfilled. See [[https://github.com/brocode/fbpush][fbpush]].
+  The idea is that a user can interrupt goat, if he knows the condition goat is waiting for is already fulfilled. See [[https://github.com/brocode/fbpush][fbpush]].
