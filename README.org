@@ -1,4 +1,4 @@
-[[./logo/goat_rgb.png]]
+[[./logo/goat_rgb_small.png]]
 
 * goat
   
