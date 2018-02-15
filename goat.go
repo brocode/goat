@@ -6,28 +6,28 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"time"
-	"strings"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type opts struct {
-	Time  int    `short:"t" long:"time" description:"timer in seconds" required:"true"`
-	Title string `long:"title" description:"title"`
+	Time     int      `short:"t" long:"time" description:"timer in seconds" required:"true"`
+	Title    string   `long:"title" description:"title"`
 	Mappings []string `short:"m" long:"mapping" description:"Keybinding mapping. Format: <retcode>:<key>:<label> (64 <= retcode <= 113)"`
 }
 
 type mapping struct {
 	exitCode int
-	label string
-	key string
+	label    string
+	key      string
 }
 
 func parseMappings(rawMappings []string) ([]mapping, error) {
 	var mappings []mapping
 	for _, rawMapping := range rawMappings {
-		var slicedMapping =	strings.Split(rawMapping, ":")
-		if(len(slicedMapping) != 3){
+		var slicedMapping = strings.Split(rawMapping, ":")
+		if len(slicedMapping) != 3 {
 			return nil, fmt.Errorf("Invalid mapping '%s', format should be <retcode>:<key>:<label>", rawMapping)
 		}
 		var exitCode, err = strconv.Atoi(slicedMapping[0])
@@ -35,7 +35,7 @@ func parseMappings(rawMappings []string) ([]mapping, error) {
 			return nil, fmt.Errorf("Invalid mapping '%s', retcode '%s' is either not a number or < 64 or > 113", rawMapping, slicedMapping[0])
 		}
 
-		mappings = append(mappings, mapping {exitCode: exitCode, key: slicedMapping[1], label: slicedMapping[2] })
+		mappings = append(mappings, mapping{exitCode: exitCode, key: slicedMapping[1], label: slicedMapping[2]})
 	}
 	return mappings, nil
 }
@@ -54,7 +54,6 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	os.Exit(runUI(opts, mappings))
 }
 
@@ -65,17 +64,17 @@ func timerGauge() *ui.Gauge {
 	timerGauge.Height = 5
 	timerGauge.Y = 6
 	timerGauge.BorderLabel = "Timer"
-	timerGauge.PercentColor = ui.ColorYellow
-	timerGauge.BarColor = ui.ColorGreen
+	timerGauge.PercentColor = ui.ColorBlack
+	timerGauge.BarColor = ui.ColorCyan
 	timerGauge.BorderFg = ui.ColorWhite
-	timerGauge.BorderLabelFg = ui.ColorMagenta
+	timerGauge.BorderLabelFg = ui.ColorBlack
 	return timerGauge
 }
 
 func headerBox(title string, mappings []mapping) *ui.Par {
 	var shortcuts []string
 	shortcuts = append(shortcuts, "'q' -> abort")
-	shortcuts = append(shortcuts,	"'c' -> continue")
+	shortcuts = append(shortcuts, "'c' -> continue")
 	for _, mapping := range mappings {
 		shortcuts = append(shortcuts, fmt.Sprintf("'%s' -> %s", mapping.key, mapping.label))
 	}
@@ -93,6 +92,7 @@ func headerBox(title string, mappings []mapping) *ui.Par {
 	p.TextFgColor = ui.ColorBlack
 	p.BorderLabel = boxTitle
 	p.BorderFg = ui.ColorCyan
+	p.BorderLabelFg = ui.ColorBlack
 	return p
 }
 
