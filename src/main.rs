@@ -15,14 +15,11 @@ use tui::Terminal;
 use tui::backend::MouseBackend;
 use tui::layout::{Direction, Group, Rect, Size};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, Gauge, Widget};
+use tui::widgets::{Block, Borders, Gauge, Paragraph, Widget};
 
 struct AppState {
   size: Rect,
   progress1: u16,
-  progress2: u16,
-  progress3: u16,
-  progress4: u16,
 }
 
 impl AppState {
@@ -30,9 +27,6 @@ impl AppState {
     AppState {
       size: Rect::default(),
       progress1: 0,
-      progress2: 0,
-      progress3: 0,
-      progress4: 0,
     }
   }
 
@@ -40,18 +34,6 @@ impl AppState {
     self.progress1 += 5;
     if self.progress1 > 100 {
       self.progress1 = 0;
-    }
-    self.progress2 += 10;
-    if self.progress2 > 100 {
-      self.progress2 = 0;
-    }
-    self.progress3 += 1;
-    if self.progress3 > 100 {
-      self.progress3 = 0;
-    }
-    self.progress4 += 3;
-    if self.progress4 > 100 {
-      self.progress4 = 0;
     }
   }
 }
@@ -168,28 +150,28 @@ fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
       Size::Percent(25),
     ])
     .render(t, &app_state.size, |t, chunks| {
-      Gauge::default()
-        .block(Block::default().title("Gauge1").borders(Borders::ALL))
-        .style(Style::default().fg(Color::Yellow))
-        .percent(app_state.progress1)
+      Paragraph::default()
+        .block(
+          Block::default()
+            .borders(Borders::ALL)
+            .title("title")
+            .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)),
+        )
+        .wrap(true)
+        .text(
+          "This is a line\n{fg=red This is a line}\n{bg=red This is a \
+           line}\n{mod=italic This is a line}\n{mod=bold This is a \
+           line}\n{mod=crossed_out This is a line}\n{mod=invert This is a \
+           line}\n{mod=underline This is a \
+           line}\n{bg=green;fg=yellow;mod=italic This is a line}\n",
+        )
         .render(t, &chunks[0]);
       Gauge::default()
-        .block(Block::default().title("Gauge2").borders(Borders::ALL))
-        .style(Style::default().fg(Color::Magenta).bg(Color::Green))
-        .percent(app_state.progress2)
-        .label(&format!("{}/100", app_state.progress2))
+        .block(Block::default().title("Gauge1").borders(Borders::ALL))
+        .style(Style::default().fg(Color::Cyan))
+        .percent(app_state.progress1)
+        .label(&format!("{}/100", app_state.progress1))
         .render(t, &chunks[1]);
-      Gauge::default()
-        .block(Block::default().title("Gauge2").borders(Borders::ALL))
-        .style(Style::default().fg(Color::Yellow))
-        .percent(app_state.progress3)
-        .render(t, &chunks[2]);
-      Gauge::default()
-        .block(Block::default().title("Gauge3").borders(Borders::ALL))
-        .style(Style::default().fg(Color::Cyan).modifier(Modifier::Italic))
-        .percent(app_state.progress4)
-        .label(&format!("{}/100", app_state.progress2))
-        .render(t, &chunks[3]);
     });
 
   t.draw().unwrap();
