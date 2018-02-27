@@ -6,6 +6,7 @@ extern crate clap;
 
 use clap::{App, AppSettings, Arg};
 use std::collections::BTreeMap;
+use std::collections::btree_map::Entry;
 use std::io;
 use std::sync::mpsc;
 use std::thread;
@@ -23,6 +24,7 @@ struct AppState {
   size: Rect,
   start_time: SystemTime,
   duration: Duration,
+  mappings: BTreeMap<char, KeyMapping>,
 }
 
 struct KeyMapping {
@@ -31,11 +33,12 @@ struct KeyMapping {
 }
 
 impl AppState {
-  fn new(duration: Duration) -> AppState {
+  fn new(duration: Duration, mappings: BTreeMap<char, KeyMapping>) -> AppState {
     AppState {
       size: Rect::default(),
       start_time: SystemTime::now(),
       duration: duration,
+      mappings: mappings,
     }
   }
 
@@ -105,7 +108,7 @@ fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMapping
     if split.len() == 3 {
       if let Some(char) = split[1].chars().next() {
         if let Ok(ret_code) = split[0].parse::<i32>() {
-          if (ret_code > 113 || ret_code < 64) {
+          if ret_code > 113 || ret_code < 64 {
             return Err(format!(
               "Invalid mapping '{}', retcode should be < 64 or > 113",
               mapping
@@ -137,6 +140,20 @@ fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMapping
       ));
     }
   }
+  mappings.insert(
+    'q',
+    KeyMapping {
+      ret_code: 1,
+      label: "abort".to_string(),
+    },
+  );
+  mappings.insert(
+    'c',
+    KeyMapping {
+      ret_code: 0,
+      label: "continue".to_string(),
+    },
+  );
   Ok(mappings)
 }
 
@@ -151,9 +168,7 @@ fn main() {
   match parse_mappings(raw_mappings) {
     Ok(mappings) => {
       let return_code = {
-        // AppState
-        let mut app_state = AppState::new(Duration::from_secs(time as u64));
-        // Terminal initialization
+        let mut app_state = AppState::new(Duration::from_secs(time as u64), mappings);
         let backend = MouseBackend::new().expect("Expected to initialize backend");
         let mut terminal = Terminal::new(backend).expect("Expected to initialize terminal");
 
@@ -182,9 +197,6 @@ fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i32 {
     for c in stdin.keys() {
       let evt = c.unwrap();
       input_tx.send(Event::Input(evt)).unwrap();
-      if evt == event::Key::Char('q') {
-        break;
-      }
     }
   });
 
@@ -209,8 +221,10 @@ fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i32 {
 
     let evt = rx.recv().unwrap();
     match evt {
-      Event::Input(input) => if input == event::Key::Char('q') {
-        return 1;
+      Event::Input(input) => if let event::Key::Char(key) = input {
+        if let Entry::Occupied(value) = app_state.mappings.entry(key) {
+          return value.get().ret_code;
+        }
       },
       Event::Tick => {
         if app_state.at_end() {
