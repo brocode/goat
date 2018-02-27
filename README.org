@@ -3,6 +3,7 @@
 * goat
   
   [[https://travis-ci.org/brocode/goat][file:https://travis-ci.org/brocode/goat.svg?branch=master]]
+  [[https://crates.io/crates/goat][file:https://img.shields.io/crates/v/goat.svg]]
 
   aka better ~sleep~ 
 
