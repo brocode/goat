@@ -5,6 +5,7 @@ extern crate tui;
 extern crate clap;
 
 use clap::{App, AppSettings, Arg};
+use std::collections::BTreeMap;
 use std::io;
 use std::sync::mpsc;
 use std::thread;
@@ -22,6 +23,11 @@ struct AppState {
   size: Rect,
   start_time: SystemTime,
   duration: Duration,
+}
+
+struct KeyMapping {
+  ret_code: i32,
+  label: String,
 }
 
 impl AppState {
@@ -92,6 +98,48 @@ fn app<'a>() -> App<'a, 'a> {
     )
 }
 
+fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMapping>, String> {
+  let mut mappings: BTreeMap<char, KeyMapping> = BTreeMap::new();
+  for mapping in raw_mappings {
+    let mut split: Vec<&str> = mapping.split(":").collect();
+    if split.len() == 3 {
+      if let Some(char) = split[1].chars().next() {
+        if let Ok(ret_code) = split[0].parse::<i32>() {
+          if (ret_code > 113 || ret_code < 64) {
+            return Err(format!(
+              "Invalid mapping '{}', retcode should be < 64 or > 113",
+              mapping
+            ));
+          }
+          mappings.insert(
+            char,
+            KeyMapping {
+              ret_code: ret_code,
+              label: split[2].to_string(),
+            },
+          );
+        } else {
+          return Err(format!(
+            "Invalid mapping '{}', retcode should be a number",
+            mapping
+          ));
+        }
+      } else {
+        return Err(format!(
+          "Invalid mapping '{}', keycode should be a char",
+          mapping
+        ));
+      }
+    } else {
+      return Err(format!(
+        "Invalid mapping '{}', format should be <retcode>:<key>:<label>",
+        mapping
+      ));
+    }
+  }
+  Ok(mappings)
+}
+
 fn main() {
   let matches = app().get_matches();
   let time: i32 = matches
@@ -99,19 +147,27 @@ fn main() {
     .expect("clap should ensure this")
     .parse::<i32>()
     .expect("Expected time to be a valid number");
+  let raw_mappings = matches.values_of_lossy("mappings").unwrap_or_default();
+  match parse_mappings(raw_mappings) {
+    Ok(mappings) => {
+      let return_code = {
+        // AppState
+        let mut app_state = AppState::new(Duration::from_secs(time as u64));
+        // Terminal initialization
+        let backend = MouseBackend::new().expect("Expected to initialize backend");
+        let mut terminal = Terminal::new(backend).expect("Expected to initialize terminal");
 
-  let return_code = {
-    // AppState
-    let mut app_state = AppState::new(Duration::from_secs(time as u64));
-    // Terminal initialization
-    let backend = MouseBackend::new().expect("Expected to initialize backend");
-    let mut terminal = Terminal::new(backend).expect("Expected to initialize terminal");
-
-    let return_code = run(&mut terminal, app_state);
-    terminal.show_cursor().expect("Expected to show cursor");
-    return_code
-  };
-  std::process::exit(return_code)
+        let return_code = run(&mut terminal, app_state);
+        terminal.show_cursor().expect("Expected to show cursor");
+        return_code
+      };
+      std::process::exit(return_code)
+    }
+    Err(message) => {
+      eprintln!("{}", message);
+      std::process::exit(1)
+    }
+  }
 }
 
 fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i32 {
