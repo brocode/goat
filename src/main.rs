@@ -9,6 +9,7 @@ use std::io;
 use std::sync::mpsc;
 use std::thread;
 use std::time;
+use std::time::{Duration, SystemTime};
 use termion::event;
 use termion::input::TermRead;
 use tui::Terminal;
@@ -19,22 +20,35 @@ use tui::widgets::{Block, Borders, Gauge, Paragraph, Widget};
 
 struct AppState {
   size: Rect,
-  progress1: u16,
+  start_time: SystemTime,
+  duration: Duration,
 }
 
 impl AppState {
-  fn new() -> AppState {
+  fn new(duration: Duration) -> AppState {
     AppState {
       size: Rect::default(),
-      progress1: 0,
+      start_time: SystemTime::now(),
+      duration: duration,
     }
   }
 
-  fn advance(&mut self) {
-    self.progress1 += 5;
-    if self.progress1 > 100 {
-      self.progress1 = 0;
-    }
+  fn progress_in_percent(self: &AppState) -> u16 {
+    let elapsed: Duration = self
+      .start_time
+      .elapsed()
+      .expect("Expected to determine elapsed time");
+    std::cmp::min(
+      ((elapsed.as_secs() as f64 / self.duration.as_secs() as f64) * 100.0) as u16,
+      100 as u16,
+    )
+  }
+
+  fn at_end(self: &AppState) -> bool {
+    self
+      .start_time
+      .elapsed()
+      .expect("Expected to determine elapsed time") > self.duration
   }
 }
 
@@ -80,11 +94,27 @@ fn app<'a>() -> App<'a, 'a> {
 
 fn main() {
   let matches = app().get_matches();
+  let time: i32 = matches
+    .value_of("time")
+    .expect("clap should ensure this")
+    .parse::<i32>()
+    .expect("Expected time to be a valid number");
 
-  // Terminal initialization
-  let backend = MouseBackend::new().unwrap();
-  let mut terminal = Terminal::new(backend).unwrap();
+  let return_code = {
+    // AppState
+    let mut app_state = AppState::new(Duration::from_secs(time as u64));
+    // Terminal initialization
+    let backend = MouseBackend::new().expect("Expected to initialize backend");
+    let mut terminal = Terminal::new(backend).expect("Expected to initialize terminal");
 
+    let return_code = run(&mut terminal, app_state);
+    terminal.show_cursor().expect("Expected to show cursor");
+    return_code
+  };
+  std::process::exit(return_code)
+}
+
+fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i32 {
   // Channels
   let (tx, rx) = mpsc::channel();
   let input_tx = tx.clone();
@@ -108,14 +138,11 @@ fn main() {
     thread::sleep(time::Duration::from_millis(500));
   });
 
-  // AppState
-  let mut app_state = AppState::new();
-
   // First draw call
   terminal.clear().unwrap();
   terminal.hide_cursor().unwrap();
   app_state.size = terminal.size().unwrap();
-  draw(&mut terminal, &app_state);
+  draw(terminal, &app_state);
 
   loop {
     let size = terminal.size().unwrap();
@@ -127,16 +154,18 @@ fn main() {
     let evt = rx.recv().unwrap();
     match evt {
       Event::Input(input) => if input == event::Key::Char('q') {
-        break;
+        return 1;
       },
       Event::Tick => {
-        app_state.advance();
+        if app_state.at_end() {
+          break;
+        }
       }
     }
-    draw(&mut terminal, &app_state);
+    draw(terminal, &app_state);
   }
 
-  terminal.show_cursor().unwrap();
+  0
 }
 
 fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
@@ -144,10 +173,10 @@ fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
     .direction(Direction::Vertical)
     .margin(2)
     .sizes(&[
-      Size::Percent(25),
-      Size::Percent(25),
-      Size::Percent(25),
-      Size::Percent(25),
+      Size::Percent(20),
+      Size::Percent(20),
+      Size::Percent(10),
+      Size::Percent(50),
     ])
     .render(t, &app_state.size, |t, chunks| {
       Paragraph::default()
@@ -169,8 +198,8 @@ fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
       Gauge::default()
         .block(Block::default().title("Gauge1").borders(Borders::ALL))
         .style(Style::default().fg(Color::Cyan))
-        .percent(app_state.progress1)
-        .label(&format!("{}/100", app_state.progress1))
+        .percent(app_state.progress_in_percent())
+        .label(&format!("{}/100", app_state.progress_in_percent()))
         .render(t, &chunks[1]);
     });
 
