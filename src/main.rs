@@ -5,6 +5,7 @@ extern crate tui;
 extern crate clap;
 
 use clap::{App, AppSettings, Arg};
+use keymapping::{parse_mappings, KeyMapping};
 use std::collections::BTreeMap;
 use std::collections::btree_map::Entry;
 use std::io;
@@ -20,17 +21,14 @@ use tui::layout::{Direction, Group, Rect, Size};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, Gauge, Paragraph, Widget};
 
+mod keymapping;
+
 struct AppState {
   size: Rect,
   start_time: SystemTime,
   duration: Duration,
   mappings: BTreeMap<char, KeyMapping>,
   title: String,
-}
-
-struct KeyMapping {
-  ret_code: i32,
-  label: String,
 }
 
 impl AppState {
@@ -101,62 +99,6 @@ fn app<'a>() -> App<'a, 'a> {
         .help("Keybinding mapping. Format: <retcode>:<key>:<label> (64 <= retcode <= 113)")
         .required(false),
     )
-}
-
-fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMapping>, String> {
-  let mut mappings: BTreeMap<char, KeyMapping> = BTreeMap::new();
-  for mapping in raw_mappings {
-    let mut split: Vec<&str> = mapping.split(":").collect();
-    if split.len() == 3 {
-      if let Some(char) = split[1].chars().next() {
-        if let Ok(ret_code) = split[0].parse::<i32>() {
-          if ret_code > 113 || ret_code < 64 {
-            return Err(format!(
-              "Invalid mapping '{}', retcode should be < 64 or > 113",
-              mapping
-            ));
-          }
-          mappings.insert(
-            char,
-            KeyMapping {
-              ret_code: ret_code,
-              label: split[2].to_string(),
-            },
-          );
-        } else {
-          return Err(format!(
-            "Invalid mapping '{}', retcode should be a number",
-            mapping
-          ));
-        }
-      } else {
-        return Err(format!(
-          "Invalid mapping '{}', keycode should be a char",
-          mapping
-        ));
-      }
-    } else {
-      return Err(format!(
-        "Invalid mapping '{}', format should be <retcode>:<key>:<label>",
-        mapping
-      ));
-    }
-  }
-  mappings.insert(
-    'q',
-    KeyMapping {
-      ret_code: 1,
-      label: "abort".to_string(),
-    },
-  );
-  mappings.insert(
-    'c',
-    KeyMapping {
-      ret_code: 0,
-      label: "continue".to_string(),
-    },
-  );
-  Ok(mappings)
 }
 
 fn main() {
