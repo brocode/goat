@@ -25,6 +25,7 @@ struct AppState {
   start_time: SystemTime,
   duration: Duration,
   mappings: BTreeMap<char, KeyMapping>,
+  title: String,
 }
 
 struct KeyMapping {
@@ -33,12 +34,13 @@ struct KeyMapping {
 }
 
 impl AppState {
-  fn new(duration: Duration, mappings: BTreeMap<char, KeyMapping>) -> AppState {
+  fn new(duration: Duration, mappings: BTreeMap<char, KeyMapping>, title: String) -> AppState {
     AppState {
       size: Rect::default(),
       start_time: SystemTime::now(),
       duration: duration,
       mappings: mappings,
+      title: title,
     }
   }
 
@@ -164,11 +166,12 @@ fn main() {
     .expect("clap should ensure this")
     .parse::<i32>()
     .expect("Expected time to be a valid number");
+  let title: String = matches.value_of("title").unwrap_or("GOAT").to_string();
   let raw_mappings = matches.values_of_lossy("mappings").unwrap_or_default();
   match parse_mappings(raw_mappings) {
     Ok(mappings) => {
       let return_code = {
-        let mut app_state = AppState::new(Duration::from_secs(time as u64), mappings);
+        let mut app_state = AppState::new(Duration::from_secs(time as u64), mappings, title);
         let backend = MouseBackend::new().expect("Expected to initialize backend");
         let mut terminal = Terminal::new(backend).expect("Expected to initialize terminal");
 
@@ -239,6 +242,10 @@ fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i32 {
 }
 
 fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
+  let mut text = String::with_capacity(100);
+  for (key, value) in app_state.mappings.iter() {
+    text.push_str(&format!("{{fg=green {}}} -> {}\n", key, value.label))
+  }
   Group::default()
     .direction(Direction::Vertical)
     .margin(2)
@@ -253,20 +260,14 @@ fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
         .block(
           Block::default()
             .borders(Borders::ALL)
-            .title("title")
+            .title(&app_state.title)
             .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)),
         )
         .wrap(true)
-        .text(
-          "This is a line\n{fg=red This is a line}\n{bg=red This is a \
-           line}\n{mod=italic This is a line}\n{mod=bold This is a \
-           line}\n{mod=crossed_out This is a line}\n{mod=invert This is a \
-           line}\n{mod=underline This is a \
-           line}\n{bg=green;fg=yellow;mod=italic This is a line}\n",
-        )
+        .text(&text)
         .render(t, &chunks[0]);
       Gauge::default()
-        .block(Block::default().title("Gauge1").borders(Borders::ALL))
+        .block(Block::default().title("timer").borders(Borders::ALL))
         .style(Style::default().fg(Color::Cyan))
         .percent(app_state.progress_in_percent())
         .label(&format!("{}/100", app_state.progress_in_percent()))
