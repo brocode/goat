@@ -2,6 +2,12 @@
 name = "goat"
 version = "0.4.0"
 authors = ["Patrick Haun <bomgar85@googlemail.com>"]
+description = "better sleep"
+license = "WTFPL"
+categories = ["command-line-utilities"]
+repository = "https://github.com/brocode/goat"
+readme = "README.org"
+keywords = ["cli", "automation", "developer-tools" ]
 
 [dependencies]
 tui="0.2"
