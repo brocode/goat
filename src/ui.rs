@@ -33,9 +33,9 @@ impl AppState {
     AppState {
       size: Rect::default(),
       start_time: SystemTime::now(),
-      duration: duration,
-      mappings: mappings,
-      title: title,
+      duration,
+      mappings,
+      title,
     }
   }
 
@@ -113,7 +113,7 @@ pub fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i3
 
 fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
   let mut text = String::with_capacity(100);
-  for (key, value) in app_state.mappings.iter() {
+  for (key, value) in &app_state.mappings {
     text.push_str(&format!("{{fg=green {}}} -> {}\n", key, value.label))
   }
   Group::default()
