@@ -1,7 +1,6 @@
 use keymapping::KeyMapping;
 use std;
 use std::collections::BTreeMap;
-use std::collections::btree_map::Entry;
 use std::io;
 use std::sync::mpsc;
 use std::thread;
@@ -95,8 +94,8 @@ pub fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i3
     let evt = rx.recv().unwrap();
     match evt {
       Event::Input(input) => if let event::Key::Char(key) = input {
-        if let Entry::Occupied(value) = app_state.mappings.entry(key) {
-          return value.get().ret_code;
+        if let Some(value) = app_state.mappings.get(&key) {
+          return value.ret_code;
         }
       },
       Event::Tick => {
