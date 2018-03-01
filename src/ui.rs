@@ -119,10 +119,8 @@ fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
     .direction(Direction::Vertical)
     .margin(2)
     .sizes(&[
-      Size::Percent(20),
-      Size::Percent(20),
-      Size::Percent(10),
-      Size::Percent(50),
+      Size::Percent(72),
+      Size::Percent(25),
     ])
     .render(t, &app_state.size, |t, chunks| {
       Paragraph::default()
