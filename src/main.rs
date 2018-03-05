@@ -67,6 +67,7 @@ fn main() {
 
         let return_code = run(&mut terminal, app_state);
         terminal.show_cursor().expect("Expected to show cursor");
+        terminal.clear().expect("Expected to clear terminal");
         return_code
       };
       std::process::exit(return_code)
