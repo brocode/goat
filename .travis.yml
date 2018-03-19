@@ -1,29 +1,45 @@
 language: rust
 rust:
-  - stable
-  - beta
-  - nightly
+- stable
+- beta
+- nightly
+
+services:
+  - docker
+
+os:
+  - linux
+
 matrix:
   allow_failures:
-    - rust: nightly
+  - rust: nightly
 addons:
   apt:
     sources:
-      - kalakris-cmake
+    - kalakris-cmake
     packages:
-      - cmake
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
-      - wget
-      - zsh
-
+    - cmake
+    - libcurl4-openssl-dev
+    - libelf-dev
+    - libdw-dev
+    - wget
+    - zsh
 script:
-  - cargo build --verbose
-  - cargo test --verbose
-  - mkdir -p smoke
-  - wget https://raw.githubusercontent.com/grml/grml-etc-core/master/etc/zsh/zshrc -O smoke/vanilla-grml-zshrc
-  - zsh -c "source smoke/vanilla-grml-zshrc && eval $(cargo run -- print-zsh-setup 2>/dev/null)"
+- cargo build --verbose
+- cargo test --verbose
+
+before_deploy: "bash package.sh"
+deploy:
+  provider: releases
+  api_key:
+    secure: HiJdsWXM6bxU4g+t0cZCZ8rwlw/oa/Anv5iGSKUiSMvoKtDkM8dH64f/Xo8gti0MlY6Tt6NlUyYQrooCCABlEirZxB343FuMGydibESy8HSZ8seYyc5NmTDPslSoCOslDDZC/ptGd7ztc0jq9vGq7OEyI4v99rOKq3aW6kxvvGdIurMyWeN+wPFdz69z48Alix+kIKZSmpPcTMgAl0KVLdWv64nLDt8ylHz4BmUCeBtns75PmDA/sjmxtaEy8FRmAFHC+wQHA1t2OcauphRikVg44G4ztXVClljD8ZGSsjw3EXPklI5fph82pgediE49QmOX6ztSlYchU1JVAkEM3hwVYbeK1xu2q4CAPAAxA3lWFX8AD82rzuYstfA2Jx1n44RqigkFDXrcnQfYOidKmiSsK4Eid9w3z/KVonakTqxnIiIx7i02v/OAdnlJSrxjTz5K6KuvKzE68tA1h0BQRXm/oNRs3cdpV4ezDTplOnJfLSgMjqdzYUrZ5PiCnD7DuPVKgG89k7vWgNG4p/xLNy24AERUYKckx8GiBOdn3/GTAUq8InAl3RN+zJgIVlqTwKxWuyuiyNisAA+gDChPhW+uz8UG1WWxcwIvbiA/5r2SxIUcWZlCZDIIoWpIkzdR+Ro3JQewEB7g9VMOahvQAQ8zXgcR4X0snSyGy6DUbeI=
+  file:
+    - "./target/x86_64-unknown-linux-musl/release/goat"
+    - "./target/x86_64-unknown-linux-musl/release/goat.deb"
+    - "./target/x86_64-unknown-linux-musl/release/goat.rpm"
+  on:
+    tags: true
+    rust: stable
 
 notifications:
   email:
