@@ -38,6 +38,14 @@ impl AppState {
     }
   }
 
+  fn time_passed_in_seconds(self: &AppState) -> u16 {
+    self
+      .start_time
+      .elapsed()
+      .expect("Expected to determine elapsed time")
+      .as_secs() as u16
+  }
+
   fn progress_in_percent(self: &AppState) -> u16 {
     let elapsed: Duration = self
       .start_time
@@ -137,7 +145,7 @@ fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
         .block(Block::default().title("timer").borders(Borders::ALL))
         .style(Style::default().fg(Color::Cyan))
         .percent(app_state.progress_in_percent())
-        .label(&format!("{}/100", app_state.progress_in_percent()))
+        .label(&format!("{}s / {}s", app_state.time_passed_in_seconds(), app_state.duration.as_secs()))
         .render(t, &chunks[1]);
     });
 
