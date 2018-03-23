@@ -13,10 +13,7 @@ pub fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMap
       if let Some(char) = split[1].chars().next() {
         if let Ok(ret_code) = split[0].parse::<i32>() {
           if ret_code > 113 || ret_code < 64 {
-            return Err(format!(
-              "Invalid mapping '{}', retcode should be < 64 or > 113",
-              mapping
-            ));
+            return Err(format!("Invalid mapping '{}', retcode should be < 64 or > 113", mapping));
           }
           mappings.insert(
             char,
@@ -26,22 +23,13 @@ pub fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMap
             },
           );
         } else {
-          return Err(format!(
-            "Invalid mapping '{}', retcode should be a number",
-            mapping
-          ));
+          return Err(format!("Invalid mapping '{}', retcode should be a number", mapping));
         }
       } else {
-        return Err(format!(
-          "Invalid mapping '{}', keycode should be a char",
-          mapping
-        ));
+        return Err(format!("Invalid mapping '{}', keycode should be a char", mapping));
       }
     } else {
-      return Err(format!(
-        "Invalid mapping '{}', format should be <retcode>:<key>:<label>",
-        mapping
-      ));
+      return Err(format!("Invalid mapping '{}', format should be <retcode>:<key>:<label>", mapping));
     }
   }
   mappings.insert(
