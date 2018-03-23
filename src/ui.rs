@@ -27,6 +27,14 @@ enum Event {
   Tick,
 }
 
+const NANOS_PER_MILLI: u64 = 1_000_000;
+const MILLIS_PER_SEC: u64 = 1_000;
+
+fn duration_as_millis(duration: &Duration) -> u64 {
+  let sub_millis = duration.subsec_nanos() as u64 / NANOS_PER_MILLI;
+  duration.as_secs() * MILLIS_PER_SEC + sub_millis
+}
+
 impl AppState {
   pub fn new(duration: Duration, mappings: BTreeMap<char, KeyMapping>, title: String) -> AppState {
     AppState {
@@ -38,30 +46,24 @@ impl AppState {
     }
   }
 
-  fn time_passed_in_seconds(self: &AppState) -> u16 {
-    self
-      .start_time
-      .elapsed()
-      .expect("Expected to determine elapsed time")
-      .as_secs() as u16
+  fn time_passed(self: &AppState) -> Duration {
+    self.start_time.elapsed().expect("Expected to determine elapsed time")
+  }
+
+  fn time_passed_in_seconds(self: &AppState) -> u64 {
+    self.time_passed().as_secs() as u64
   }
 
   fn progress_in_percent(self: &AppState) -> u16 {
-    let elapsed: Duration = self
-      .start_time
-      .elapsed()
-      .expect("Expected to determine elapsed time");
+    let elapsed: Duration = self.time_passed();
     std::cmp::min(
-      ((elapsed.as_secs() as f64 / self.duration.as_secs() as f64) * 100.0) as u16,
+      ((duration_as_millis(&elapsed) as f64 / duration_as_millis(&self.duration) as f64) * 100.0) as u16,
       100 as u16,
     )
   }
 
   fn at_end(self: &AppState) -> bool {
-    self
-      .start_time
-      .elapsed()
-      .expect("Expected to determine elapsed time") > self.duration
+    self.start_time.elapsed().expect("Expected to determine elapsed time") > self.duration
   }
 }
 
@@ -126,10 +128,7 @@ fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
   Group::default()
     .direction(Direction::Vertical)
     .margin(2)
-    .sizes(&[
-      Size::Percent(72),
-      Size::Percent(25),
-    ])
+    .sizes(&[Size::Percent(72), Size::Percent(25)])
     .render(t, &app_state.size, |t, chunks| {
       Paragraph::default()
         .block(
