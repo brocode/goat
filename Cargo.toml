@@ -11,5 +11,5 @@ keywords = ["cli", "automation", "developer-tools" ]
 
 [dependencies]
 tui="0.2"
-termion="1.5"
-clap = "2.29"
+termion="1"
+clap = "2"
