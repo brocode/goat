@@ -31,7 +31,7 @@ const NANOS_PER_MILLI: u64 = 1_000_000;
 const MILLIS_PER_SEC: u64 = 1_000;
 
 fn duration_as_millis(duration: &Duration) -> u64 {
-  let sub_millis = duration.subsec_nanos() as u64 / NANOS_PER_MILLI;
+  let sub_millis = u64::from(duration.subsec_nanos()) / NANOS_PER_MILLI;
   duration.as_secs() * MILLIS_PER_SEC + sub_millis
 }
 
