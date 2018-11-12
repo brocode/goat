@@ -2,17 +2,19 @@ use keymapping::KeyMapping;
 use std;
 use std::collections::BTreeMap;
 use std::io;
+use std::io::Stdout;
 use std::sync::mpsc;
 use std::thread;
 use std::time;
 use std::time::{Duration, SystemTime};
 use termion::event;
 use termion::input::TermRead;
-use tui::Terminal;
-use tui::backend::MouseBackend;
-use tui::layout::{Direction, Group, Rect, Size};
+use termion::raw::RawTerminal;
+use tui::backend::TermionBackend;
+use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, Gauge, Paragraph, Widget};
+use tui::widgets::{Block, Borders, Gauge, Paragraph, Text, Widget};
+use tui::Terminal;
 
 pub struct AppState {
   pub size: Rect,
@@ -67,7 +69,7 @@ impl AppState {
   }
 }
 
-pub fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i32 {
+pub fn run(terminal: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, mut app_state: AppState) -> i32 {
   // Channels
   let (tx, rx) = mpsc::channel();
   let input_tx = tx.clone();
@@ -120,33 +122,33 @@ pub fn run(terminal: &mut Terminal<MouseBackend>, mut app_state: AppState) -> i3
   0
 }
 
-fn draw(t: &mut Terminal<MouseBackend>, app_state: &AppState) {
-  let mut text = String::with_capacity(100);
+fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppState) {
+  let mut text: Vec<Text> = Vec::new();
   for (key, value) in &app_state.mappings {
-    text.push_str(&format!("{{fg=green {}}} -> {}\n", key, value.label))
+    text.push(Text::styled(key.to_string(), Style::default().fg(Color::Green)));
+    text.push(Text::raw(format!(" -> {}\n", value.label)))
   }
-  Group::default()
-    .direction(Direction::Vertical)
-    .margin(2)
-    .sizes(&[Size::Percent(72), Size::Percent(25)])
-    .render(t, &app_state.size, |t, chunks| {
-      Paragraph::default()
-        .block(
-          Block::default()
-            .borders(Borders::ALL)
-            .title(&app_state.title)
-            .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)),
-        )
-        .wrap(true)
-        .text(&text)
-        .render(t, &chunks[0]);
-      Gauge::default()
-        .block(Block::default().title("timer").borders(Borders::ALL))
-        .style(Style::default().fg(Color::Cyan))
-        .percent(app_state.progress_in_percent())
-        .label(&format!("{}s / {}s", app_state.time_passed_in_seconds(), app_state.duration.as_secs()))
-        .render(t, &chunks[1]);
-    });
 
-  t.draw().unwrap();
+  t.draw(|mut f| {
+    let chunks = Layout::default()
+      .direction(Direction::Vertical)
+      .margin(2)
+      .constraints(vec![Constraint::Percentage(72), Constraint::Percentage(25)])
+      .split(app_state.size);
+
+    Paragraph::new(text.iter())
+      .block(
+        Block::default()
+          .borders(Borders::ALL)
+          .title(&app_state.title)
+          .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)),
+      ).wrap(true)
+      .render(&mut f, chunks[0]);
+    Gauge::default()
+      .block(Block::default().title("timer").borders(Borders::ALL))
+      .style(Style::default().fg(Color::Cyan))
+      .percent(app_state.progress_in_percent())
+      .label(&format!("{}s / {}s", app_state.time_passed_in_seconds(), app_state.duration.as_secs()))
+      .render(&mut f, chunks[1]);
+  }).expect("Expected to be able to draw on terminal");
 }

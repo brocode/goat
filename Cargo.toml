@@ -10,6 +10,7 @@ readme = "README.org"
 keywords = ["cli", "automation", "developer-tools" ]
 
 [dependencies]
-tui="0.2"
+tui="0.3"
 termion="1"
 clap = "2"
+atty = "0.2"
