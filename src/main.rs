@@ -61,8 +61,8 @@ fn main() {
   let title: String = matches.value_of("title").unwrap_or("GOAT").to_string();
   let raw_mappings = matches.values_of_lossy("mappings").unwrap_or_default();
   if !atty::is(atty::Stream::Stdin) || !atty::is(atty::Stream::Stdout) {
+    println!("goat - sleeping for {} seconds: '{}'", time, title);
     std::thread::sleep(Duration::from_secs(time as u64));
-    println!("goat: sleeping for {} seconds", time);
   } else {
     match parse_mappings(raw_mappings) {
       Ok(mappings) => {
