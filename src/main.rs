@@ -6,14 +6,14 @@ extern crate clap;
 
 extern crate atty;
 
-use clap::{App, AppSettings, Arg};
 use crate::keymapping::parse_mappings;
+use crate::ui::{run, AppState};
+use clap::{App, AppSettings, Arg};
 use std::io;
 use std::time::Duration;
 use termion::raw::IntoRawMode;
 use tui::backend::TermionBackend;
 use tui::Terminal;
-use crate::ui::{run, AppState};
 
 mod keymapping;
 mod ui;
@@ -32,14 +32,16 @@ fn app<'a>() -> App<'a, 'a> {
         .number_of_values(1)
         .help("timer in seconds")
         .required(true),
-    ).arg(
+    )
+    .arg(
       Arg::with_name("title")
         .long("title")
         .takes_value(true)
         .number_of_values(1)
         .help("title")
         .required(false),
-    ).arg(
+    )
+    .arg(
       Arg::with_name("mappings")
         .short("m")
         .long("mapping")

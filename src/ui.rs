@@ -105,11 +105,13 @@ pub fn run(terminal: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, mut app
 
     let evt = rx.recv().unwrap();
     match evt {
-      Event::Input(input) => if let event::Key::Char(key) = input {
-        if let Some(value) = app_state.mappings.get(&key) {
-          return value.ret_code;
+      Event::Input(input) => {
+        if let event::Key::Char(key) = input {
+          if let Some(value) = app_state.mappings.get(&key) {
+            return value.ret_code;
+          }
         }
-      },
+      }
       Event::Tick => {
         if app_state.at_end() {
           break;
@@ -142,7 +144,8 @@ fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppSt
           .borders(Borders::ALL)
           .title(&app_state.title)
           .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)),
-      ).wrap(true)
+      )
+      .wrap(true)
       .render(&mut f, chunks[0]);
     Gauge::default()
       .block(Block::default().title("timer").borders(Borders::ALL))
@@ -150,5 +153,6 @@ fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppSt
       .percent(app_state.progress_in_percent())
       .label(&format!("{}s / {}s", app_state.time_passed_in_seconds(), app_state.duration.as_secs()))
       .render(&mut f, chunks[1]);
-  }).expect("Expected to be able to draw on terminal");
+  })
+  .expect("Expected to be able to draw on terminal");
 }
