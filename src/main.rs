@@ -1,14 +1,10 @@
 extern crate termion;
 extern crate tui;
 
-#[macro_use]
-extern crate clap;
-
-extern crate atty;
 
 use crate::keymapping::parse_mappings;
 use crate::ui::{run, AppState};
-use clap::{App, AppSettings, Arg};
+use clap::{App, AppSettings, Arg, crate_version};
 use std::io;
 use std::time::Duration;
 use termion::raw::IntoRawMode;
