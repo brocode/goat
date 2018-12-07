@@ -1,4 +1,4 @@
-use keymapping::KeyMapping;
+use crate::keymapping::KeyMapping;
 use std;
 use std::collections::BTreeMap;
 use std::io;

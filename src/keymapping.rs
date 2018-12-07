@@ -8,7 +8,7 @@ pub struct KeyMapping {
 pub fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMapping>, String> {
   let mut mappings: BTreeMap<char, KeyMapping> = BTreeMap::new();
   for mapping in raw_mappings {
-    let mut split: Vec<&str> = mapping.split(':').collect();
+    let split: Vec<&str> = mapping.split(':').collect();
     if split.len() == 3 {
       if let Some(char) = split[1].chars().next() {
         if let Ok(ret_code) = split[0].parse::<i32>() {

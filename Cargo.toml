@@ -8,6 +8,7 @@ categories = ["command-line-utilities"]
 repository = "https://github.com/brocode/goat"
 readme = "README.org"
 keywords = ["cli", "automation", "developer-tools" ]
+edition = "2018"
 
 [dependencies]
 tui="0.3"
