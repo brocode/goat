@@ -143,7 +143,7 @@ fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppSt
         Block::default()
           .borders(Borders::ALL)
           .title(&app_state.title)
-          .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)),
+          .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::BOLD)),
       )
       .wrap(true)
       .render(&mut f, chunks[0]);
