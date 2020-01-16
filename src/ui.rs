@@ -73,7 +73,7 @@ pub fn run(terminal: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, mut app
   // Channels
   let (tx, rx) = mpsc::channel();
   let input_tx = tx.clone();
-  let clock_tx = tx.clone();
+  let clock_tx = tx;
 
   // Input
   thread::spawn(move || {
