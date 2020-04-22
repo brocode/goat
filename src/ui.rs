@@ -13,7 +13,7 @@ use termion::raw::RawTerminal;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, Gauge, Paragraph, Text, Widget};
+use tui::widgets::{Block, Borders, Gauge, Paragraph, Text};
 use tui::Terminal;
 
 pub struct AppState {
@@ -138,21 +138,23 @@ fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppSt
       .constraints(vec![Constraint::Percentage(72), Constraint::Percentage(25)])
       .split(app_state.size);
 
-    Paragraph::new(text.iter())
+    let para = Paragraph::new(text.iter())
       .block(
         Block::default()
           .borders(Borders::ALL)
           .title(&app_state.title)
           .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::BOLD)),
       )
-      .wrap(true)
-      .render(&mut f, chunks[0]);
-    Gauge::default()
+      .wrap(true);
+    let label = format!("{}s / {}s", app_state.time_passed_in_seconds(), app_state.duration.as_secs());
+    let gauge = Gauge::default()
       .block(Block::default().title("timer").borders(Borders::ALL))
       .style(Style::default().fg(Color::Cyan))
       .percent(app_state.progress_in_percent())
-      .label(&format!("{}s / {}s", app_state.time_passed_in_seconds(), app_state.duration.as_secs()))
-      .render(&mut f, chunks[1]);
+      .label(&label);
+
+    f.render_widget(para, chunks[0]);
+    f.render_widget(gauge, chunks[1]);
   })
   .expect("Expected to be able to draw on terminal");
 }
