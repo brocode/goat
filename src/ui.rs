@@ -1,5 +1,5 @@
 use crate::keymapping::KeyMapping;
-use std;
+
 use std::collections::BTreeMap;
 use std::io;
 use std::io::Stdout;
