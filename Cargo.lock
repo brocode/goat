@@ -49,7 +49,7 @@ dependencies = [
 
 [[package]]
 name = "goat"
-version = "0.10.0"
+version = "0.10.1-alpha.0"
 dependencies = [
  "atty",
  "clap",
