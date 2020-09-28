@@ -13,7 +13,8 @@ use termion::raw::RawTerminal;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, Gauge, Paragraph, Text};
+use tui::text::{Span, Spans, Text};
+use tui::widgets::{Block, Borders, Gauge, Paragraph, Wrap};
 use tui::Terminal;
 
 pub struct AppState {
@@ -125,33 +126,31 @@ pub fn run(terminal: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, mut app
 }
 
 fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppState) {
-  let mut text: Vec<Text> = Vec::new();
+  let mut text: Vec<Spans> = Vec::new();
   for (key, value) in &app_state.mappings {
-    text.push(Text::styled(key.to_string(), Style::default().fg(Color::Green)));
-    text.push(Text::raw(format!(" -> {}\n", value.label)))
+      text.push(Spans::from(vec!(Span::styled(key.to_string(), Style::default().fg(Color::Green)), Span::raw(format!(" -> {}\n", value.label)))))
   }
 
-  t.draw(|mut f| {
+  t.draw(|f| {
     let chunks = Layout::default()
       .direction(Direction::Vertical)
       .margin(2)
       .constraints(vec![Constraint::Percentage(72), Constraint::Percentage(25)])
       .split(app_state.size);
 
-    let para = Paragraph::new(text.iter())
+      let para = Paragraph::new(Text{lines: text})
       .block(
         Block::default()
           .borders(Borders::ALL)
-          .title(&app_state.title)
-          .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::BOLD)),
+          .title(Span::styled(&app_state.title, Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD))),
       )
-      .wrap(true);
+      .wrap(Wrap { trim: true });
     let label = format!("{}s / {}s", app_state.time_passed_in_seconds(), app_state.duration.as_secs());
     let gauge = Gauge::default()
       .block(Block::default().title("timer").borders(Borders::ALL))
-      .style(Style::default().fg(Color::Cyan))
+      .gauge_style(Style::default().fg(Color::Cyan))
       .percent(app_state.progress_in_percent())
-      .label(&label);
+      .label(Span::raw(&label));
 
     f.render_widget(para, chunks[0]);
     f.render_widget(gauge, chunks[1]);
