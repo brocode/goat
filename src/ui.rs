@@ -128,7 +128,10 @@ pub fn run(terminal: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, mut app
 fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppState) {
   let mut text: Vec<Spans> = Vec::new();
   for (key, value) in &app_state.mappings {
-      text.push(Spans::from(vec!(Span::styled(key.to_string(), Style::default().fg(Color::Green)), Span::raw(format!(" -> {}\n", value.label)))))
+    text.push(Spans::from(vec![
+      Span::styled(key.to_string(), Style::default().fg(Color::Green)),
+      Span::raw(format!(" -> {}\n", value.label)),
+    ]))
   }
 
   t.draw(|f| {
@@ -138,7 +141,7 @@ fn draw(t: &mut Terminal<TermionBackend<RawTerminal<Stdout>>>, app_state: &AppSt
       .constraints(vec![Constraint::Percentage(72), Constraint::Percentage(25)])
       .split(app_state.size);
 
-      let para = Paragraph::new(Text{lines: text})
+    let para = Paragraph::new(Text { lines: text })
       .block(
         Block::default()
           .borders(Borders::ALL)
