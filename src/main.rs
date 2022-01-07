@@ -3,7 +3,7 @@ extern crate tui;
 
 use crate::keymapping::parse_mappings;
 use crate::ui::{run, AppState};
-use clap::{crate_version, App, AppSettings, Arg};
+use clap::{crate_version, App, Arg};
 use std::io;
 use std::time::Duration;
 use termion::raw::IntoRawMode;
@@ -13,15 +13,14 @@ use tui::Terminal;
 mod keymapping;
 mod ui;
 
-fn app<'a>() -> App<'a, 'a> {
+fn app<'a>() -> App<'a> {
   App::new("goat")
     .version(crate_version!())
     .author("Brocode <bros@brocode.sh>")
     .about("better sleep")
-    .global_setting(AppSettings::ColoredHelp)
     .arg(
-      Arg::with_name("time")
-        .short("t")
+      Arg::new("time")
+        .short('t')
         .long("time")
         .takes_value(true)
         .number_of_values(1)
@@ -29,7 +28,7 @@ fn app<'a>() -> App<'a, 'a> {
         .required(true),
     )
     .arg(
-      Arg::with_name("title")
+      Arg::new("title")
         .long("title")
         .takes_value(true)
         .number_of_values(1)
@@ -37,11 +36,11 @@ fn app<'a>() -> App<'a, 'a> {
         .required(false),
     )
     .arg(
-      Arg::with_name("mappings")
-        .short("m")
+      Arg::new("mappings")
+        .short('m')
         .long("mapping")
         .takes_value(true)
-        .multiple(true)
+        .multiple_occurrences(true)
         .number_of_values(1)
         .help("Keybinding mapping. Format: <retcode>:<key>:<label> (64 <= retcode <= 113)")
         .required(false),

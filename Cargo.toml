@@ -13,5 +13,8 @@ edition = "2018"
 [dependencies]
 tui="0.16"
 termion="1"
-clap = "2"
 atty = "0.2"
+
+[dependencies.clap]
+version = "3"
+features = ["cargo"]
