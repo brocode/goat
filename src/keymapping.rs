@@ -5,6 +5,7 @@ pub struct KeyMapping {
   pub label: String,
 }
 
+#[allow(clippy::manual_range_contains)]
 pub fn parse_mappings(raw_mappings: Vec<String>) -> Result<BTreeMap<char, KeyMapping>, String> {
   let mut mappings: BTreeMap<char, KeyMapping> = BTreeMap::new();
   for mapping in raw_mappings {

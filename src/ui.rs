@@ -61,7 +61,7 @@ impl AppState {
     let elapsed: Duration = self.time_passed();
     std::cmp::min(
       ((duration_as_millis(&elapsed) as f64 / duration_as_millis(&self.duration) as f64) * 100.0) as u16,
-      100 as u16,
+      100_u16,
     )
   }
 
