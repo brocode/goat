@@ -3,7 +3,7 @@ extern crate tui;
 
 use crate::keymapping::parse_mappings;
 use crate::ui::{run, AppState};
-use clap::{crate_version, App, Arg};
+use clap::{crate_version, Command, Arg};
 use std::io;
 use std::time::Duration;
 use termion::raw::IntoRawMode;
@@ -13,8 +13,8 @@ use tui::Terminal;
 mod keymapping;
 mod ui;
 
-fn app<'a>() -> App<'a> {
-  App::new("goat")
+fn app<'a>() -> Command<'a> {
+  Command::new("goat")
     .version(crate_version!())
     .author("Brocode <bros@brocode.sh>")
     .about("better sleep")
