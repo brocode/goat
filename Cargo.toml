@@ -17,7 +17,7 @@ atty = "0.2"
 [dependencies.tui]
 default-features = false
 features = ["termion"]
-version="0.18"
+version="0.19"
 
 [dependencies.clap]
 version = "3"
