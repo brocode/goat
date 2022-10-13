@@ -20,5 +20,5 @@ features = ["termion"]
 version="0.19"
 
 [dependencies.clap]
-version = "3"
+version = "4"
 features = ["cargo"]
