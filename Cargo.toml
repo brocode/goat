@@ -11,7 +11,7 @@ keywords = ["cli", "automation", "developer-tools" ]
 edition = "2021"
 
 [dependencies]
-termion="1"
+termion="2"
 atty = "0.2"
 
 [dependencies.tui]
